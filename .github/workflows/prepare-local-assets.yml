@@ -1,0 +1,67 @@
+name: Prepare local Stockfish assets
+
+on:
+  workflow_dispatch:
+  push:
+    paths-ignore:
+      - "stockfish-18-lite-single.js"
+      - "stockfish-18-lite-single.wasm"
+      - "stockfish-18-asm.js"
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Repository herunterladen
+        uses: actions/checkout@v4
+
+      - name: Stockfish 18 Lite Single herunterladen
+        run: |
+          set -e
+          curl -L --fail --retry 3 \
+            -o stockfish-18-lite-single.js \
+            https://github.com/nmrugg/stockfish.js/releases/download/v18.0.0/stockfish-18-lite-single.js
+
+          curl -L --fail --retry 3 \
+            -o stockfish-18-lite-single.wasm \
+            https://github.com/nmrugg/stockfish.js/releases/download/v18.0.0/stockfish-18-lite-single.wasm
+
+      - name: Stockfish 18 ASM-JS Fallback herunterladen
+        run: |
+          set -e
+          curl -L --fail --retry 3 \
+            -o stockfish-18-asm.js \
+            https://github.com/nmrugg/stockfish.js/releases/download/v18.0.0/stockfish-18-asm.js
+
+      - name: Dateien überprüfen
+        run: |
+          set -e
+
+          test -s stockfish-18-lite-single.js
+          test -s stockfish-18-lite-single.wasm
+          test -s stockfish-18-asm.js
+
+          echo "Stockfish-Dateien erfolgreich heruntergeladen:"
+          ls -lh stockfish-18-lite-single.js
+          ls -lh stockfish-18-lite-single.wasm
+          ls -lh stockfish-18-asm.js
+
+      - name: Dateien ins Repository speichern
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add stockfish-18-lite-single.js
+          git add stockfish-18-lite-single.wasm
+          git add stockfish-18-asm.js
+
+          if git diff --cached --quiet; then
+            echo "Keine neuen Stockfish-Dateien vorhanden."
+          else
+            git commit -m "Add local Stockfish 18 engine assets"
+            git push
+          fi
