@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stockfish local test</title>
+<style>body{font-family:system-ui;margin:0;padding:20px;max-width:700px}.ok{color:#087f23}.bad{color:#b00020}#s{padding:14px;border-radius:8px;background:#eee}</style>
+<h1>Stockfish 18 local test</h1>
+<div id="s">Starting…</div>
+<script>
+const s=document.getElementById('s');
+let w;
+try{
+  w=new Worker('./stockfish-18-lite-single.js');
+  const t=setTimeout(()=>{s.className='bad';s.textContent='TIMEOUT: local Stockfish did not answer within 20 seconds.'},20000);
+  w.onerror=e=>{clearTimeout(t);s.className='bad';s.textContent='WORKER ERROR: '+(e.message||'unknown')};
+  w.onmessage=e=>{
+    const line=String(e.data||'');
+    if(line==='uciok')w.postMessage('isready');
+    if(line==='readyok'){
+      clearTimeout(t);
+      s.className='ok';
+      s.textContent='OK — Stockfish 18 Lite Single is locally connected and ready.';
+    }
+  };
+  w.postMessage('uci');
+}catch(e){s.className='bad';s.textContent='CREATE ERROR: '+e.message}
+</script>
