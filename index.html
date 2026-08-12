@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Stockfish Rating Hunt</title>
+<style>
+:root{--bg:#1b120b;--panel:#3a2819;--panel2:#4a3421;--text:#f7ecd8;--muted:#c9b89d;--accent:#d7ad58;--danger:#d66b5d;--light:#e7d0a5;--dark:#7a4f2f;--sel:#e5b84d;--legal:rgba(44,125,76,.72);--shadow:0 24px 70px rgba(0,0,0,.48)}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at top,#6a4b2e 0,#2a1a0e 48%,#130b06 100%);font-family:Georgia,"Times New Roman",serif;color:var(--text);display:flex;justify-content:center;padding:18px}button,input,select{font:inherit}.app{width:min(1180px,100%);display:grid;grid-template-columns:minmax(520px,760px) 330px;gap:24px;align-items:start}.card{background:linear-gradient(145deg,rgba(76,52,31,.97),rgba(43,28,17,.97));border:1px solid #9a7245;border-radius:16px;box-shadow:var(--shadow)}.game{padding:18px}.top{display:flex;justify-content:space-between;align-items:center;margin:0 4px 14px}.brand{font-weight:800;font-size:21px;letter-spacing:.2px;text-shadow:0 2px 2px #0008}.status{font-size:13px;color:var(--muted)}.board-wrap{width:min(100%,760px);aspect-ratio:1/1;margin:0 auto;border:8px solid #4b2f19;border-radius:10px;overflow:hidden;box-shadow:0 18px 45px rgba(0,0,0,.55);background:#4b2f19}.board{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:repeat(8,minmax(0,1fr));width:100%;height:100%;user-select:none;-webkit-user-select:none;touch-action:manipulation}.sq{position:relative;display:flex;align-items:center;justify-content:center;width:100%;height:100%;min-width:0;min-height:0;padding:0;margin:0;border:0;appearance:none;-webkit-appearance:none;font-size:clamp(36px,8vw,74px);cursor:pointer}.sq.light{background:#e8edf4}.sq.dark{background:#71809c}.sq.selected{box-shadow:inset 0 0 0 5px var(--sel)}.sq.last{box-shadow:inset 0 0 0 5px rgba(250,204,21,.32)}.sq.legal::after{content:"";width:20%;height:20%;border-radius:50%;background:var(--legal);position:absolute}.sq.capture::after{content:"";position:absolute;inset:10%;border:5px solid rgba(248,113,113,.55);border-radius:50%}.piece{display:block;line-height:1;transform:translateY(-1px);font-family:"DejaVu Sans","Arial Unicode MS","Segoe UI Symbol",serif;font-weight:900;pointer-events:none}.whitePiece{color:#fff8df;text-shadow:-2px -2px 0 #4a321e,2px -2px 0 #4a321e,-2px 2px 0 #4a321e,2px 2px 0 #4a321e,0 4px 5px #0008}.blackPiece{color:#15110d;text-shadow:-2px -2px 0 #e8d7b7,2px -2px 0 #e8d7b7,-2px 2px 0 #e8d7b7,2px 2px 0 #e8d7b7,0 4px 5px #0009}.files{display:grid;grid-template-columns:repeat(8,1fr);font-size:11px;color:#d9c39f;text-align:center;padding-top:8px}.controls{display:flex;gap:10px;margin-top:14px}.btn{border:1px solid #9a7245;background:#2a1a0f;color:var(--text);border-radius:9px;padding:11px 14px;cursor:pointer;font-weight:700}.btn:hover{background:#4b2f19}.btn.primary{background:var(--accent);color:#201205;border-color:#f1d18a}.btn:disabled{opacity:.45;cursor:not-allowed}.side{padding:20px}.side h2{margin:0 0 4px;font-size:20px}.side p{margin:0 0 18px;color:var(--muted);font-size:13px;line-height:1.45}.stat{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}.box{background:rgba(24,14,8,.42);border:1px solid #805d39;border-radius:11px;padding:14px}.label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}.value{font-size:27px;font-weight:800;margin-top:3px}.rating{color:var(--accent)}.field{margin:14px 0}.field label{display:flex;justify-content:space-between;font-size:13px;margin-bottom:7px;color:#dce5fb}.field input,.field select{width:100%;background:#21130b;color:var(--text);border:1px solid #805d39;border-radius:8px;padding:10px}.hint{font-size:12px;color:var(--muted);line-height:1.45;background:#21130b;border:1px solid #6f4d2e;border-radius:9px;padding:12px;margin-top:15px}.log{margin-top:16px;max-height:180px;overflow:auto;font-size:12px;color:#c8d2e8}.log div{padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06)}.flash{color:var(--accent);font-weight:700}.danger{color:var(--danger)}.overlay{position:fixed;inset:0;background:rgba(4,8,18,.7);display:none;align-items:center;justify-content:center;padding:20px;z-index:10}.modal{width:min(420px,100%);background:#121a2e;border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:20px;box-shadow:var(--shadow)}.modal h3{margin:0 0 14px}.promo{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.promo button{font-size:38px;background:#1a2642;border:0;border-radius:14px;padding:12px;cursor:pointer}.loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(22,12,6,.82);font-weight:800;z-index:5;text-align:center;padding:20px;pointer-events:none}.board-wrap.ready .loading{display:none}.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--accent);margin-right:7px;animation:pulse 1s infinite}@keyframes pulse{50%{opacity:.35}}@media(max-width:900px){body{padding:12px}.app{grid-template-columns:1fr}.side{order:2}.game{order:1}.sq{font-size:clamp(30px,10vw,60px)}}
+</style>
+</head>
+<body>
+<div class="app">
+<section class="card game">
+  <div class="top"><div class="brand">♟ Stockfish Rating Hunt</div><div id="status" class="status"><span class="dot"></span>Engine wird geladen…</div></div>
+  <div id="boardWrap" class="board-wrap"><div class="loading" id="loading">Stockfish wird geladen…</div><div id="board" class="board"></div></div>
+  <div class="files"><span>a</span><span>b</span><span>c</span><span>d</span><span>e</span><span>f</span><span>g</span><span>h</span></div>
+  <div class="controls"><button class="btn primary" id="newGame">Neue Partie</button><button class="btn" id="flip">Brett drehen</button><button class="btn" id="resign">Aufgeben</button><button class="btn" id="retry">Engine neu verbinden</button></div>
+</section>
+<aside class="card side">
+  <h2>Rating Hunt</h2><p>Wähle einen Modus und spiele normales Schach oder jage Stockfishs Rating mit deinen Zügen herunter. Das Rating steuert jetzt auch die tatsächliche Engine-Spielstärke.</p>
+  <div class="stat"><div class="box"><div class="label">Stockfish Rating</div><div id="rating" class="value rating">1800</div></div><div class="box"><div class="label">Dein Treffer</div><div id="hits" class="value">0</div></div></div>
+  <div class="field"><label for="mode">Spielmodus</label><select id="mode">
+    <option value="best">🎯 Bester Zug – Rating für Treffer</option>
+    <option value="check">♔ Schach geben – Rating für Schach</option>
+    <option value="move">⚡ Jeder Stockfish-Zug – Rating pro Zug</option>
+  </select></div>
+  <div class="field"><label for="startRating">Start-Rating <span>100–3200</span></label><input id="startRating" type="number" min="100" max="3200" step="50" value="1800"></div>
+  <div class="field"><label for="loss" id="lossLabel">Rating-Verlust pro bestem Zug <span>1–500</span></label><input id="loss" type="number" min="1" max="500" step="1" value="100"></div>
+  <button class="btn" id="apply">Einstellungen anwenden</button>
+  <div class="hint" id="modeHint"><b>So funktioniert es:</b> Im Modus „Bester Zug“ muss dein Zug exakt mit Stockfishs vorberechnetem besten Zug übereinstimmen. Dann sinkt das Rating um den eingestellten Wert.</div>
+  <div id="log" class="log"></div>
+</aside>
+</div>
+<div id="promotion" class="overlay"><div class="modal"><h3>Umwandlung wählen</h3><div class="promo"><button data-piece="q">♕</button><button data-piece="r">♖</button><button data-piece="b">♗</button><button data-piece="n">♘</button></div></div></div>
+<script type="module">
+import { Chess } from 'https://cdn.jsdelivr.net/npm/chess.js@1.4.0/+esm';
+
+const PIECES={w:{p:'♙',n:'♘',b:'♗',r:'♖',q:'♕',k:'♔'},b:{p:'♟',n:'♞',b:'♝',r:'♜',q:'♛',k:'♚'}};
+const API_URL='https://chess-api.com/v1';
+const FALLBACK_API='https://stockfish.online/api/s/v2.php';
+const UCI_RE=/^[a-h][1-8][a-h][1-8][qrbn]?$/;
+function normalizeUci(value){
+  if(typeof value!=='string') return '';
+  const t=value.trim().split(/\s+/).find(x=>UCI_RE.test(x));
+  return t||'';
+}
+let activeProvider='local-worker';
+let engineWorker=null,engineBootPromise=null,engineReadyPromise=null,pendingEngine=null;
+
+function createEngineWorker(){
+  if(engineWorker)return engineWorker;
+  engineWorker=new Worker('./engine-worker.js');
+  engineWorker.onerror=()=>{
+    engineReady=false;connectionProbeDone=false;
+    const err=new Error('Stockfish Worker konnte nicht gestartet werden.');
+    if(engineBootPromise){engineBootPromise.reject(err);engineBootPromise=null}
+    if(engineReadyPromise){engineReadyPromise.reject(err);engineReadyPromise=null}
+    if(pendingEngine){pendingEngine.reject(err);pendingEngine=null}
+  };
+  engineWorker.onmessage=e=>{
+    const line=typeof e.data==='string'?e.data.trim():'';
+    if(line==='uciok'&&engineBootPromise){engineBootPromise.resolve(true);engineBootPromise=null}
+    if(line==='readyok'&&engineReadyPromise){engineReadyPromise.resolve(true);engineReadyPromise=null}
+    if(line.startsWith('bridge-error:')){
+      const err=new Error(line.slice(13)||'Engine-Import fehlgeschlagen.');
+      if(engineBootPromise){engineBootPromise.reject(err);engineBootPromise=null}
+      if(pendingEngine){pendingEngine.reject(err);pendingEngine=null}
+      return
+    }
+    if(pendingEngine){
+      pendingEngine.lines.push(line);
+      if(line.startsWith('bestmove ')){
+        const finish=pendingEngine.finish;
+        if(finish)finish();
+      }
+    }
+  };
+  return engineWorker
+}
+function waitForMessage(kind,timeoutMs){
+  return new Promise((resolve,reject)=>{
+    const obj={resolve:v=>{clearTimeout(timer);resolve(v)},reject:e=>{clearTimeout(timer);reject(e)}};
+    const timer=setTimeout(()=>reject(new Error('Stockfish '+kind+' Zeitüberschreitung.')),timeoutMs);
+    if(kind==='UCI')engineBootPromise=obj;else engineReadyPromise=obj;
+  })
+}
+async function initLocalStockfish(){
+  const w=createEngineWorker();
+  engineBootPromise=null;engineReadyPromise=null;
+  const uciWait=waitForMessage('UCI',12000);w.postMessage('uci');await uciWait;
+  w.postMessage('setoption name Hash value 16');
+  w.postMessage('setoption name Threads value 1');
+  const readyWait=waitForMessage('ready',12000);w.postMessage('isready');await readyWait;
+  engineReady=true;connectionProbeDone=true;activeProvider='local-worker';return true
+}
+function parseUciInfo(lines){
+  const byPv=new Map();
+  for(const line of lines){
+    if(!line.startsWith('info ')||!/\bmultipv\s+\d+/.test(line)||!/\bpv\s+/.test(line))continue;
+    const mp=Number((line.match(/\bmultipv\s+(\d+)/)||[])[1]||1);
+    const pv=(line.split(/\bpv\s+/)[1]||'').trim().split(/\s+/),first=pv[0]||'';
+    if(!UCI_RE.test(first))continue;
+    const cpM=line.match(/\bscore\s+cp\s+(-?\d+)/),mateM=line.match(/\bscore\s+mate\s+(-?\d+)/),depthM=line.match(/\bdepth\s+(\d+)/);
+    let evaluation=null;if(cpM)evaluation=Number(cpM[1])/100;if(mateM)evaluation=Number(mateM[1])>0?10000:-10000;
+    const d=Number(depthM?.[1]||0),prev=byPv.get(mp);
+    if(!prev||d>=prev.depth)byPv.set(mp,{move:first,evaluation,depth:d,multipv:mp})
+  }
+  return [...byPv.values()].sort((a,b)=>a.multipv-b.multipv)
+}
+async function localEngineRequest(fen,profile={}){
+  if(!engineReady)await initLocalStockfish();
+  const depth=Math.max(6,Math.min(18,Number(profile.depth)||12));
+  const movetime=Math.max(120,Math.min(1800,Number(profile.maxThinkingTime)||700));
+  const variants=Math.max(1,Math.min(5,Number(profile.variants)||5));
+  const w=engineWorker;if(pendingEngine)throw new Error('Stockfish ist bereits beschäftigt.');
+  return await new Promise((resolve,reject)=>{
+    const state={lines:[],resolve,reject,finish:null};pendingEngine=state;
+    const timer=setTimeout(()=>{if(pendingEngine!==state)return;pendingEngine=null;try{w.postMessage('stop')}catch{};reject(new Error('Stockfish-Berechnung Zeitüberschreitung.'))},Math.max(3500,movetime+5000));
+    state.finish=()=>{
+      if(pendingEngine!==state)return;clearTimeout(timer);pendingEngine=null;
+      const result=parseUciInfo(state.lines);
+      if(!result.length){reject(new Error('Stockfish lieferte keine Kandidaten.'));return}
+      resolve({raw:result[0],variants:result.slice(0,variants),provider:'local'})
+    };
+    w.postMessage('ucinewgame');w.postMessage('setoption name MultiPV value '+variants);
+    w.postMessage('position fen '+fen);w.postMessage('go depth '+depth+' movetime '+movetime)
+  })
+}
+async function requestOnlineFallback(fen,profile={}){
+  const depth=Math.max(6,Math.min(15,Number(profile.depth)||10)),url='https://stockfish.online/api/s/v2.php?fen='+encodeURIComponent(fen)+'&depth='+depth;
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),10000);
+  try{const res=await fetch(url,{signal:controller.signal,cache:'no-store'}),raw=await res.json(),move=normalizeUci(raw?.bestmove);
+    if(!res.ok||!raw?.success||!move)throw new Error('Online-Backup nicht verfügbar.');
+    activeProvider='online-backup';return {raw,variants:[{move,depth}],provider:'fallback'}
+  }finally{clearTimeout(timer)}
+}
+async function engineRequest(fen,profile={},r=rating){
+  try{return await localEngineRequest(fen,profile)}
+  catch(localError){
+    addLog('Lokaler Stockfish-Worker fehlgeschlagen – Online-Backup wird versucht.','danger');
+    try{return await requestOnlineFallback(fen,profile)}
+    catch(onlineError){throw new Error('Stockfish nicht verfügbar: '+(localError?.message||localError))}
+  }
+}
+function abortActive(){
+  if(pendingEngine){const p=pendingEngine;pendingEngine=null;try{engineWorker?.postMessage('stop')}catch{};try{p.reject(new Error('Berechnung abgebrochen.'))}catch{}}
+}
+function buildSearchMoves(){return ''}
+function scoreOfVariant(v){
+  const raw=v?.evaluation ?? v?.eval ?? v?.score ?? v?.centipawn ?? v?.cp;
+  if(typeof raw==='number' && Number.isFinite(raw)) return raw;
+  if(typeof raw==='string'){
+    const n=Number(raw.replace(/[^\d.+-]/g,''));
+    if(Number.isFinite(n)) return n;
+  }
+  return null;
+}
+function chooseRatedMove(result,profile,r){
+  const list=(result?.variants||[])
+    .filter(v=>v&&normalizeUci(v.move))
+    .map(v=>({...v,move:normalizeUci(v.move),_score:scoreOfVariant(v)}));
+  if(!list.length) return null;
+  if(list.length===1) return list[0];
+
+  // The API normally returns variants in strength order, but never rely on
+  // transport order. `eval` is in pawn units and higher is better for the side
+  // to move at the root position. Sorting avoids a false weak reference move.
+  const scored=list.filter(v=>v._score!==null);
+  const unscored=list.filter(v=>v._score===null);
+  scored.sort((a,b)=>b._score-a._score);
+  const ordered=scored.concat(unscored);
+
+  const x=clampRating(r);
+  const tier=Math.floor(x/100)*100;
+  const config={
+    100:{best:.06,maxRank:5,cp:5.00},200:{best:.07,maxRank:5,cp:4.50},
+    300:{best:.09,maxRank:5,cp:4.00},400:{best:.11,maxRank:5,cp:3.50},
+    500:{best:.14,maxRank:5,cp:3.20},600:{best:.18,maxRank:5,cp:2.90},
+    700:{best:.23,maxRank:4,cp:2.50},800:{best:.30,maxRank:4,cp:2.10},
+    900:{best:.40,maxRank:3,cp:1.70},1000:{best:.52,maxRank:3,cp:1.35},
+    1100:{best:.68,maxRank:3,cp:1.00},
+    // From 1200 upward we protect the displayed rating from catastrophic
+    // candidate jumps. Only the top two engine candidates are eligible and
+    // their evaluation gap is tightly bounded.
+    1200:{best:.78,maxRank:2,cp:.55},1300:{best:.79,maxRank:2,cp:.40},
+    1400:{best:.84,maxRank:2,cp:.32},1500:{best:.87,maxRank:2,cp:.26},
+    1600:{best:.89,maxRank:2,cp:.21},1700:{best:.90,maxRank:2,cp:.17},
+    1800:{best:.91,maxRank:2,cp:.14},1900:{best:.86,maxRank:2,cp:.11},
+    2000:{best:.904,maxRank:2,cp:.09},2100:{best:.912,maxRank:2,cp:.07},
+    2200:{best:.920,maxRank:2,cp:.06},2300:{best:.928,maxRank:2,cp:.05},
+    2400:{best:.936,maxRank:2,cp:.04},2500:{best:.944,maxRank:2,cp:.03},
+    2600:{best:.952,maxRank:2,cp:.02},2700:{best:.960,maxRank:2,cp:.02},
+    2800:{best:.968,maxRank:2,cp:.02},2900:{best:.976,maxRank:2,cp:.02},
+    3000:{best:.984,maxRank:2,cp:.02},3100:{best:.992,maxRank:2,cp:.02},3200:{best:1.0,maxRank:2,cp:.02}
+  };
+  const c=config[tier]||config[1800];
+  const ref=ordered[0]._score;
+  let candidates=ordered.slice(0,Math.min(c.maxRank,ordered.length));
+  if(ref!==null){
+    candidates=candidates.filter((v,i)=>i===0 || (v._score!==null && (ref-v._score)<=c.cp));
+    if(!candidates.length)candidates=[ordered[0]];
+  }
+  if(c.best>=1 || candidates.length===1)return candidates[0];
+  return Math.random()<c.best ? candidates[0] : candidates[Math.min(1,candidates.length-1)];
+}
+function chooseFallbackRatedMove(fen,bestMove,r){
+  bestMove=typeof bestMove==='string'?bestMove:'';
+  if(!UCI_RE.test(bestMove))bestMove='';
+  const probe=new Chess(fen);
+  const legal=probe.moves({verbose:true}).map(moveToUci);
+  if(!legal.length)return '';
+  if(!bestMove||!legal.includes(bestMove))return legal[0];
+
+  // A one-move backup API cannot provide a genuine weaker candidate. Never
+  // replace its Stockfish move with a random legal move at 1000+ Elo: that
+  // caused the observed 1300-Elo "300-level blunder" failures.
+  const x=clampRating(r);
+  if(x>=1000)return bestMove;
+  const weakenChance={100:.88,200:.82,300:.76,400:.69,500:.61,600:.52,700:.43,800:.34,900:.25};
+  if(Math.random() >= (weakenChance[Math.floor(x/100)*100]??0))return bestMove;
+  const candidates=legal.filter(m=>m!==bestMove);
+  if(!candidates.length)return bestMove;
+  const quiet=candidates.filter(m=>{
+    const piece=probe.get(m.slice(0,2));
+    return piece && piece.type!=='q' && !m.includes('x');
+  });
+  return (quiet.length?quiet:candidates)[Math.floor(Math.random()*(quiet.length?quiet.length:candidates.length))]||bestMove;
+}
+function pieceValue(type){return ({p:100,n:320,b:330,r:500,q:900,k:20000})[type]||0}
+function localEval(ch){
+  const vals={p:100,n:320,b:330,r:500,q:900,k:20000};
+  let score=0;
+  for(const sq of squares){const pc=ch.get(sq);if(!pc)continue;let v=vals[pc.type]||0;const rank=Number(sq[1]),file=sq.charCodeAt(0)-97;
+    // Mild piece-square preferences: center and advanced pawns are useful, but material dominates.
+    const center=(3.5-Math.abs(3.5-file))+(3.5-Math.abs(3.5-(rank-1)));
+    if(pc.type==='p')v+=center*3+(pc.color==='w'?(rank-2)*2:(7-rank)*2);
+    else if(pc.type!=='k')v+=center*2;
+    score+=(pc.color==='w'?v:-v);
+  }
+  if(ch.isCheckmate()) return ch.turn()==='w'?-100000:100000;
+  if(ch.isDraw()) return 0;
+  return score;
+}
+function localEmergencyMove(fen,r){
+  const ch=new Chess(fen); const legal=ch.moves({verbose:true}); if(!legal.length)return '';
+  const x=clampRating(r); const depth=x<700?1:(x<1400?2:2);
+  const scored=[];
+  for(const mv of legal){
+    const c=new Chess(fen); let played; try{played=c.move(mv)}catch{continue} if(!played)continue;
+    let score=localEval(c);
+    if(depth>1){
+      const replies=c.moves({verbose:true});
+      let worst=Infinity;
+      for(const reply of replies.slice(0,32)){
+        const d=new Chess(c.fen()); try{d.move(reply)}catch{continue}
+        worst=Math.min(worst,localEval(d));
+      }
+      if(replies.length)score=worst;
+    }
+    scored.push({move:moveToUci(mv),score});
+  }
+  if(!scored.length)return '';
+  scored.sort((a,b)=>b.score-a.score);
+  // Emergency-only strength curve. Normal play never reaches this path.
+  const keep={100:.02,200:.04,300:.06,400:.08,500:.10,600:.13,700:.17,800:.22,900:.27,1000:.33,1100:.40,1200:.47,1300:.47,1400:.54,1500:.61,1600:.67,1700:.72,1800:.77,1900:.86,2000:.904,2100:.912,2200:.920,2300:.928,2400:.936,2500:.944,2600:.952,2700:.960,2800:.968,2900:.976,3000:.984,3100:.992,3200:1.0};
+  const k=keep[Math.floor(x/100)*100]??.5;
+  const maxIndex=Math.max(0,Math.min(scored.length-1,Math.round((1-k)*(scored.length-1))));
+  const idx=Math.random()<k?0:Math.floor(Math.random()*(maxIndex+1));
+  return scored[idx].move;
+}
+function gameForFen(fen){return new Chess(fen)}
+async function getRatedEngineMove(fen,r){
+  const p=ratingProfile(r);
+  const result=await engineRequest(fen,p,r);
+  const chosen=result.provider==='primary'?chooseRatedMove(result,p,r):(result.provider==='fallback'?chooseFallbackRatedMove(fen,normalizeUci(result.variants?.[0]?.move),r):normalizeUci(result.variants?.[0]?.move));
+  const move=normalizeUci(typeof chosen==='string'?chosen:chosen?.move);
+  if(!move)throw new Error('Engine lieferte keinen gültigen UCI-Zug.');
+  const legal=gameForFen(fen).moves({verbose:true}).map(moveToUci);
+  if(!legal.includes(move))throw new Error('Engine lieferte einen illegalen Zug: '+move);
+  return {move,depth:result.variants[0]?.depth??p.depth,variants:result.variants.length,profile:p,raw:result.variants[0]||null,provider:result.provider};
+}
+async function testConnection(){
+  await initLocalStockfish();
+  const data=await engineRequest(INITIAL_FEN,{depth:8,maxThinkingTime:350,variants:1},rating);
+  if(!data.variants[0]?.move)throw new Error('Keine Engine-Antwort');
+  return data.variants[0];
+}
+async function loadEngine(){
+  thinking=false;analyzingBest=false;bestMove=null;
+  if(engineReady&&connectionProbeDone){loading.style.display='none';wrap.classList.add('ready');setStatus('Bereit – du spielst Weiß');return null}
+  engineReady=false;connectionProbeDone=false;abortActive();
+  setStatus('<span class="dot"></span>Stockfish 18 verbindet…');loading.style.display='flex';loading.textContent='Stockfish 18 verbindet sich…';wrap.classList.remove('ready');
+  const t0=performance.now();
+  try{const probe=await testConnection();engineReady=true;connectionProbeDone=true;loading.style.display='none';wrap.classList.add('ready');addLog(`Stockfish 18 live verbunden (${activeProvider==='primary'?'Primärserver':'Backup-Server'}, ${Math.round(performance.now()-t0)} ms).`);setStatus('Bereit – du spielst Weiß');return probe}
+  catch(e){engineReady=false;connectionProbeDone=false;throw e}
+}
+async function searchBest(fen,profile){
+  const data=await engineRequest(fen,{...profile,searchmoves:""},rating);
+  return data.variants[0].move;
+}
+async function prepareBest(){
+  if(mode!=='best'||!engineReady||game.isGameOver()||game.turn()!=='w')return;
+  analyzingBest=true;bestMove=null;setStatus('<span class="dot"></span>Stockfish berechnet den Referenzzug…');
+  const token=gameToken;
+  try{
+    bestMove=normalizeUci(await searchBest(game.fen(),{depth:16,maxThinkingTime:650,variants:1}));
+    if(!bestMove)throw new Error('Kein gültiger Referenzzug erhalten.');
+    if(token!==gameToken)return;
+    analyzingBest=false;setStatus('Bereit – finde den besten Zug');
+  }catch(e){if(token!==gameToken)return;analyzingBest=false;handleEngineError('Engine-Analyse fehlgeschlagen: '+e.message)}
+}
+function applyRatingLoss(reason){const before=rating;rating=Math.max(100,rating-loss);hits++;updateStats();addLog(`✓ ${reason} Stockfish ${before} → ${rating} Rating.`,'flash')}
+async function makePlayerMove(m){if(!engineReady||thinking||game.isGameOver()||game.turn()!=='w')return;const uci=moveToUci(m),wasBest=mode==='best'&&bestMove&&uci===bestMove;let played;try{played=game.move(m)}catch{return}if(!played)return;selected=null;render();if(mode==='best'&&wasBest)applyRatingLoss('Bester Zug!');if(mode==='check'&&game.inCheck())applyRatingLoss('Schach gegeben!');bestMove=null;analyzingBest=false;if(game.isGameOver()){finish();return}await engineTurn()}
+async function engineTurn(){
+  const token=gameToken;thinking=true;setStatus('<span class="dot"></span>Stockfish denkt…');
+  try{
+    const data=await getRatedEngineMove(game.fen(),rating);
+    if(token!==gameToken)return;
+    const mUci=normalizeUci(data?.move);
+    if(!mUci)throw new Error('Engine-Zug ist leer oder ungültig.');
+    if(game.turn()!=='b')throw new Error('Falscher Zugstatus');
+    const move=game.move({from:mUci.substring(0,2),to:mUci.substring(2,4),promotion:mUci.length===5?mUci[4]:undefined});
+    if(!move)throw new Error('Ungültiger Engine-Zug '+mUci);
+    render();thinking=false;
+    addLog(`Stockfish: ${mUci} · Tiefe ${data.depth??data.profile.depth} · Kandidaten ${data.variants} · Rating ${rating} · ${data.provider==='primary'?'Primär':data.provider==='fallback'?'Backup':'Offline-Notfallmodus'}`);
+    if(mode==='move')applyRatingLoss('Stockfish-Zug!');
+    if(game.isGameOver()){finish();return}
+    if(mode==='best')await prepareBest();else setStatus('Bereit – du bist am Zug');
+  }catch(e){if(token!==gameToken)return;thinking=false;handleEngineError('Stockfish-Zug fehlgeschlagen: '+e.message)}
+}
+function handleEngineError(message){engineReady=false;connectionProbeDone=false;thinking=false;analyzingBest=false;bestMove=null;abortActive();setStatus('Stockfish nicht verfügbar');loading.textContent=message+' Bitte „Neue Partie“ drücken.';loading.style.display='flex';wrap.classList.remove('ready');addLog(message,'danger')}
+function finish(){thinking=false;analyzingBest=false;let msg='Partie beendet.';if(game.isCheckmate())msg=game.turn()==='w'?'Schachmatt – du verlierst.':'Schachmatt – du gewinnst!';else if(game.isDraw())msg='Remis.';setStatus(msg);addLog(msg,game.isCheckmate()&&game.turn()==='w'?'danger':'')}
+function updateStats(){ratingEl.textContent=rating;hitsEl.textContent=hits}
+function readSettings(){const s=Math.max(100,Math.min(3200,Number(document.getElementById('startRating').value)||1800));loss=Math.max(1,Math.min(500,Number(lossEl.value)||100));mode=modeEl.value;document.getElementById('startRating').value=s;lossEl.value=loss;return s}
+async function newGame(){const s=readSettings();gameToken++;game.reset();selected=null;bestMove=null;pendingPromotion=null;document.getElementById('promotion').style.display='none';hits=0;rating=s;updateStats();logEl.innerHTML='';render();try{await loadEngine();if(mode==='best')await prepareBest()}catch(e){handleEngineError('Verbindung zu Stockfish 18 fehlgeschlagen: '+e.message)}}
+document.getElementById('newGame').onclick=newGame;
+document.getElementById('flip').onclick=()=>{flipped=!flipped;render()};
+document.getElementById('retry').onclick=async()=>{try{engineReady=false;connectionProbeDone=false;abortActive();await loadEngine();if(mode==='best')await prepareBest()}catch(e){handleEngineError('Erneuter Stockfish-Verbindungsversuch fehlgeschlagen: '+e.message)}};
+document.getElementById('resign').onclick=()=>{if(!game.isGameOver()){gameToken++;abortActive();thinking=false;analyzingBest=false;bestMove=null;setStatus('Du hast aufgegeben.');addLog('Partie aufgegeben.','danger')}};
+document.getElementById('apply').onclick=async()=>{const s=readSettings();rating=s;hits=0;updateStats();gameToken++;abortActive();bestMove=null;analyzingBest=false;addLog(`Einstellungen: Modus ${mode}, Start ${s}, Verlust −${loss}.`);if(!engineReady){try{await loadEngine()}catch(e){handleEngineError('Verbindung zu Stockfish 18 fehlgeschlagen: '+e.message);return}}if(!game.isGameOver()&&game.turn()==='w'){if(mode==='best')await prepareBest();else setStatus('Bereit – du bist am Zug')}};
+modeEl.onchange=async()=>{updateModeUI();gameToken++;abortActive();bestMove=null;analyzingBest=false;if(engineReady&&!game.isGameOver()&&game.turn()==='w'){if(mode==='best')await prepareBest();else setStatus('Bereit – du bist am Zug')}};
+for(const b of document.querySelectorAll('.promo button'))b.onclick=()=>{if(pendingPromotion){const {from,to}=pendingPromotion;document.getElementById('promotion').style.display='none';pendingPromotion=null;makePlayerMove({from,to,promotion:b.dataset.piece})}};
+document.getElementById('startRating').setAttribute('max','3200');document.querySelector('#startRating').previousElementSibling.innerHTML='Start-Rating <span>100–3200</span>';updateModeUI();render();updateStats();setTimeout(()=>newGame(),50);
+</script>
+</body></html>
